@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://studyplanner-hub.github.io/sitemap.xml

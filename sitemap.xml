@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Public pages for search engines. The planner pages need a login, so they are not listed. -->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://studyplanner-hub.github.io/</loc></url>
+  <url><loc>https://studyplanner-hub.github.io/register.html</loc></url>
+  <url><loc>https://studyplanner-hub.github.io/login.html</loc></url>
+  <url><loc>https://studyplanner-hub.github.io/contact.html</loc></url>
+</urlset>
