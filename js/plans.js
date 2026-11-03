@@ -133,53 +133,22 @@ function planCard(p) {
 function viewPlans() {
   const wrap = h('div', { class: 'stack' });
 
-  // Every choice for the dropdown, in groups: your subjects, then the
-  // ready-made subjects by field, then topic lists not linked to a subject.
-  // "find" is the text the search box looks through for each choice.
+  // Your own subjects (and topic lists not linked to one) are listed above
+  // the catalogue in the picker (catalog.js).
   const loose = state.custom.filter((c) => !state.subjects.some((s) => sameName(s.name, c.name)));
-  const topicText = (t) => t ? LEVELS.map((l) => (t[l] || []).join(' ')).join(' ') : '';
-  const choices = [].concat(
+  const extra = [].concat(
     state.subjects.map((s) => ({ group: 'Your subjects', value: 's:' + s.id,
       label: s.name + (topicsFor(s) ? '' : ' (no topics yet)'), find: s.name + ' ' + topicText(topicsFor(s)) })),
-    FIELDS.flatMap((f) => Object.keys(BUILTIN).filter((k) => BUILTIN[k].field === f).map((k) => ({ group: f, value: 'b:' + k,
-      label: BUILTIN[k].name, find: [k, BUILTIN[k].name, f, BUILTIN[k].desc, topicText(BUILTIN[k])].join(' ') }))),
     loose.map((c) => ({ group: 'Other topic lists', value: 'c:' + c.id, label: c.name, find: c.name + ' ' + topicText(c) })));
-
-  // The search box: every word typed must appear in a choice's name, field,
-  // description or topics, so "fourier" finds Signals & Systems and DSP.
-  const find = h('input', { type: 'search', id: 'p-find', placeholder: 'e.g. circuits, marketing, Fourier…', autocomplete: 'off' });
-  const found = h('p', { class: 'muted-note', id: 'p-found', 'aria-live': 'polite' });
-  const sub = h('select', { id: 'p-subject' });
-  function fillSubjects() {
-    const words = find.value.trim().toLowerCase().split(/\s+/).filter(Boolean);
-    const shown = choices.filter((c) => words.every((w) => c.find.toLowerCase().includes(w)));
-    const keep = sub.value;
-    sub.replaceChildren();
-    [...new Set(shown.map((c) => c.group))].forEach((g) => sub.append(h('optgroup', { label: g },
-      shown.filter((c) => c.group === g).map((c) => h('option', { value: c.value }, c.label)))));
-    // Keep the current choice if it is still listed and still a best match.
-    // Otherwise pick the best match: a name containing the whole search
-    // ("power electronics" -> Power Electronics), then a name containing
-    // every word, then a match found only in the topics.
-    const phrase = words.join(' ');
-    const rank = (c) => c.label.toLowerCase().includes(phrase) ? 0
-      : words.every((w) => c.label.toLowerCase().includes(w)) ? 1 : 2;
-    const best = shown.slice().sort((a, b) => rank(a) - rank(b))[0];
-    if (best && shown.some((c) => c.value === keep && rank(c) <= rank(best))) sub.value = keep;
-    else if (best) sub.value = best.value;
-    found.textContent = !words.length ? choices.length + ' subjects. Type to search by name or topic.'
-      : shown.length ? shown.length + ' of ' + choices.length + ' subjects match.'
-      : 'No subjects match “' + find.value.trim() + '”. Try another word, or add your own below.';
-    found.classList.toggle('desc-warn', !!words.length && !shown.length);
-  }
-  fillSubjects();
   // Start on the last choice; otherwise the first of your subjects that has
-  // topics; otherwise the first ready-made subject.
+  // topics; otherwise the first catalogue subject.
   const firstReady = state.subjects.find(topicsFor);
-  sub.value = planSource(planPick) ? planPick : (firstReady ? 's:' + firstReady.id : 'b:' + Object.keys(BUILTIN)[0]);
-  find.addEventListener('input', () => { fillSubjects(); planPick = sub.value; paintDesc(); });
-  // Enter in the search box should not submit the form and make a plan.
-  find.addEventListener('keydown', (e) => { if (e.key === 'Enter') e.preventDefault(); });
+  const picker = catalogPicker({
+    prefix: 'p', extra: extra,
+    value: planSource(planPick) ? planPick : (firstReady ? 's:' + firstReady.id : 'b:' + Object.keys(BUILTIN)[0]),
+    onChange: (v) => { planPick = v; paintDesc(); }
+  });
+  const sub = picker.select;
   const level = h('select', { id: 'p-level' }, LEVELS.map((l) => h('option', { value: l }, l)));
   const days = h('input', { type: 'number', id: 'p-days', min: '1', max: '30', value: '3' });
   const hours = h('input', { type: 'number', id: 'p-hours', min: '0.5', max: '12', step: '0.5', value: '2' });
@@ -193,12 +162,10 @@ function viewPlans() {
     desc.classList.toggle('desc-warn', !!(s && !s.data));
     if (s && !s.data) offerTopics(s.name);
   };
-  sub.addEventListener('change', () => { planPick = sub.value; paintDesc(); });
   const msg = h('p', { class: 'msg', role: 'status' });
   const gen = h('form', { class: 'panel form', novalidate: true },
-    field('Find a subject', 'p-find', find, 'wide'),
-    h('div', { class: 'field wide' }, found),
-    field('Subject', 'p-subject', sub, 'wide'),
+    h('h2', { class: 'form-title wide' }, 'Make a study plan'),
+    picker.nodes,
     h('div', { class: 'field wide' }, desc),
     field('Level', 'p-level', level),
     field('Days', 'p-days', days),

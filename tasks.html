@@ -5,46 +5,67 @@
 <!-- Security policy: scripts may only come from this site (no inline or injected scripts); styles and fonts only from this site and Google Fonts. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#ECEFF5" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0C111D" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#F0FDFA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B1514" media="(prefers-color-scheme: dark)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <title>Tasks · Study Planner</title>
 <meta name="description" content="Track your study tasks with due dates, priorities and time estimates.">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="css/style.css">
 <script src="js/auth.js"></script>
 </head>
 <body data-view="tasks">
 <a class="skip-link" href="#view">Skip to content</a>
-<div class="page">
-  <header class="masthead">
-    <h1>Study Planner</h1>
-    <div class="masthead-side">
-      <p class="today-label" id="today-label"></p>
-      <div class="account" id="account"></div>
-    </div>
-  </header>
-  <nav class="tabs" aria-label="Sections">
-    <a href="index.html" data-view="overview">Overview</a>
-    <a href="tasks.html" data-view="tasks">Tasks</a>
-    <a href="plans.html" data-view="plans">Study Plans</a>
-    <a href="schedule.html" data-view="schedule">Schedule</a>
-    <a href="flashcards.html" data-view="flashcards">Flashcards</a>
-    <a href="focus.html" data-view="focus">Focus</a>
-    <a href="subjects.html" data-view="subjects">Subjects</a>
-    <a href="contact.html">Contact</a>
+<div class="app">
+  <!-- Main navigation: a sidebar on computers, a bottom bar on phones (see css/style.css).
+       On phones only the first four links fit; the rest are under "More". -->
+  <nav class="appnav" aria-label="Main">
+    <a class="brand" href="index.html"><img src="assets/favicon.svg" alt="" width="28" height="28"><span>Study Planner</span></a>
+    <ul class="nav-list">
+      <li><a href="index.html" data-view="overview"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg><span>Home</span></a></li>
+      <li><a href="tasks.html" data-view="tasks"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="4"/><path d="m8 12 3 3 5-6"/></svg><span>Tasks</span></a></li>
+      <li><a href="plans.html" data-view="plans"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5h6a4 4 0 0 1 4 4v12a3 3 0 0 0-3-3H2z"/><path d="M22 5h-6a4 4 0 0 0-4 4v12a3 3 0 0 1 3-3h7z"/></svg><span>Plans</span></a></li>
+      <li><a href="schedule.html" data-view="schedule"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18"/></svg><span>Schedule</span></a></li>
+      <li class="nav-secondary"><a href="flashcards.html" data-view="flashcards"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="14" height="14" rx="3"/><path d="M3 8v10a3 3 0 0 0 3 3h10"/></svg><span>Flashcards</span></a></li>
+      <li class="nav-secondary"><a href="focus.html" data-view="focus"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg><span>Focus</span></a></li>
+      <li class="nav-secondary"><a href="subjects.html" data-view="subjects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg><span>Subjects</span></a></li>
+      <li class="nav-secondary"><a href="contact.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg><span>Contact</span></a></li>
+      <li class="nav-more-item">
+        <details class="nav-more">
+          <summary><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg><span>More</span></summary>
+          <div class="more-sheet">
+            <a href="flashcards.html" data-view="flashcards"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="14" height="14" rx="3"/><path d="M3 8v10a3 3 0 0 0 3 3h10"/></svg>Flashcards</a>
+            <a href="focus.html" data-view="focus"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9 2h6"/></svg>Focus timer</a>
+            <a href="subjects.html" data-view="subjects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 10 12 5 2 10l10 5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>Subjects</a>
+            <a href="contact.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="3"/><path d="m22 7-10 6L2 7"/></svg>Contact</a>
+            <div class="account" data-account></div>
+          </div>
+        </details>
+      </li>
+    </ul>
+    <div class="account nav-account" data-account></div>
   </nav>
-  <main id="view"></main>
-  <p class="foot">Your plan is saved in this browser only.</p>
+
+  <div class="main">
+    <header class="pagehead">
+      <p class="today-label" id="today-label"></p>
+      <h1 id="page-title">Tasks</h1>
+      <p class="page-sub" id="page-sub">Everything you need to do, sorted by due date.</p>
+    </header>
+    <main id="view"></main>
+    <p class="foot">Your plan is saved in this browser only.</p>
+  </div>
 </div>
 <div id="toast" role="status" aria-live="polite"><span></span></div>
 <!-- Order matters: each file uses things declared in the files above it. -->
+<script src="js/nav.js"></script>
 <script src="js/constants.js"></script>
 <script src="js/topics.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/state.js"></script>
+<script src="js/catalog.js"></script>
 <script src="js/tasks.js"></script>
 <script src="js/streaks.js"></script>
 <script src="js/plans.js"></script>
@@ -56,5 +77,3 @@
 <script src="js/main.js"></script>
 </body>
 </html>
-
-

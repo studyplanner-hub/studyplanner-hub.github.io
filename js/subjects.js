@@ -1,15 +1,34 @@
-/* Subjects page: subjects with weekly goals, and exam dates.
-   Needs: state.js. */
+/* Subjects page: add subjects from the college catalogue (or type your
+   own), weekly goals, and exam dates.
+   Needs: state.js, catalog.js, plans.js (builtinKey). */
 'use strict';
 
 /* ---------- subjects & exams ---------- */
 function viewSubjects() {
+  // 1. Add from the catalogue: pick college -> department -> subject. The
+  //    subject keeps the catalogue name, so Study Plans finds its topics.
+  const cmsg = h('p', { class: 'msg', role: 'status' });
+  const picker = catalogPicker({ prefix: 'cat', label: 'Subject to add' });
+  const cGoal = h('input', { type: 'number', id: 'cat-goal', min: '0', max: '40', step: '0.5', value: '4', inputmode: 'decimal' });
+  const catForm = h('form', { class: 'panel form', novalidate: true },
+    h('h2', { class: 'form-title wide' }, 'Add a subject from your college'),
+    picker.nodes,
+    field('Weekly goal (hours)', 'cat-goal', cGoal),
+    h('button', { class: 'btn', type: 'submit' }, 'Add to my subjects'), cmsg);
+  catForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const b = BUILTIN[(picker.select.value || '').slice(2)];
+    if (!b) { fieldError(cmsg, picker.select, 'Choose a subject from the list.'); return; }
+    if (state.subjects.some((s) => sameName(s.name, b.name))) { fieldError(cmsg, picker.select, b.name + ' is already in your subjects.'); return; }
+    const s = { id: uid(), name: b.name, color: state.subjects.length % 6, goal: Math.max(0, Number(cGoal.value) || 0) };
+    state.subjects.push(s);
+    if (!focusSubject) focusSubject = s.id;
+    save(); render(); toast(b.name + ' added');
+  });
+
+  // 2. Or type your own subject (one that is not in the catalogue).
   const msg = h('p', { class: 'msg', role: 'status' });
-  // As you type, the box suggests the ready-made subjects (from topics.js).
-  // Picking one means Study Plans already has topics for it.
-  const suggestions = h('datalist', { id: 'builtin-subjects' },
-    FIELDS.flatMap((f) => Object.keys(BUILTIN).filter((k) => BUILTIN[k].field === f).map((k) => h('option', { value: BUILTIN[k].name }, f))));
-  const name = h('input', { type: 'text', id: 'sub-name', placeholder: 'e.g. Circuit Analysis, Marketing…', autocomplete: 'off', list: 'builtin-subjects' });
+  const name = h('input', { type: 'text', id: 'sub-name', placeholder: 'e.g. Arabic Literature', autocomplete: 'off' });
   const goal = h('input', { type: 'number', id: 'sub-goal', min: '0', max: '40', step: '0.5', value: '4' });
   const sw = h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Subject color' });
   COLOR_NAMES.forEach((cn, i) => {
@@ -17,8 +36,8 @@ function viewSubjects() {
       h('input', { type: 'radio', name: 'sub-color', value: String(i), 'aria-label': cn, checked: i === state.subjects.length % 6 }),
       h('span')));
   });
-  const subForm = h('form', { class: 'panel form', novalidate: true },
-    field('Subject name', 'sub-name', name, 'wide'), suggestions,
+  const subForm = h('form', { class: 'form', novalidate: true },
+    field('Subject name', 'sub-name', name, 'wide'),
     field('Weekly goal (hours)', 'sub-goal', goal),
     h('div', { class: 'field' }, h('span', { style: 'font-size:12.5px;font-weight:600;color:var(--muted)' }, 'Color'), sw),
     h('button', { class: 'btn', type: 'submit' }, 'Add subject'), msg);
@@ -26,6 +45,7 @@ function viewSubjects() {
     e.preventDefault();
     const n = name.value.trim();
     if (!n) { fieldError(msg, name, 'Enter a subject name.'); return; }
+    if (state.subjects.some((s) => sameName(s.name, n))) { fieldError(msg, name, n + ' is already in your subjects.'); return; }
     const sel = subForm.querySelector('input[name="sub-color"]:checked');
     const s = { id: uid(), name: n, color: sel ? Number(sel.value) : 0, goal: Math.max(0, Number(goal.value) || 0) };
     state.subjects.push(s);
@@ -38,8 +58,12 @@ function viewSubjects() {
     state.subjects.length
       ? state.subjects.map((s) => {
         const openN = state.tasks.filter((t) => !t.done && t.subject === s.id).length;
+        // Catalogue subjects show where they come from, e.g. "Engineering · Civil Engineering".
+        const b = BUILTIN[builtinKey(s.name)];
         return h('div', { class: 'subj' },
-          h('div', null, chip(s.id), h('p', { class: 'mono', style: 'margin-top:4px' }, openN + ' open task' + (openN === 1 ? '' : 's'))),
+          h('div', null, chip(s.id),
+            b ? h('p', { class: 'subj-where' }, collegeShort(b.college) + ' · ' + b.department) : null,
+            h('p', { class: 'mono', style: 'margin-top:4px' }, openN + ' open task' + (openN === 1 ? '' : 's'))),
           goalBar(s),
           confirmBtn('Delete', () => {
             state.subjects = state.subjects.filter((x) => x !== s);
@@ -80,5 +104,9 @@ function viewSubjects() {
         }, '×'))))
       : h('p', { class: 'empty', style: 'margin-top:12px' }, 'No exams yet.'));
 
-  return h('div', { class: 'stack' }, subForm, h('div', { class: 'grid-2' }, list, examPanel));
+  const ownPanel = h('details', { class: 'panel' },
+    h('summary', { class: 'summary-btn' }, 'Not in the list? Type your own subject'),
+    h('div', { style: 'margin-top:14px' }, subForm));
+
+  return h('div', { class: 'stack' }, catForm, ownPanel, h('div', { class: 'grid-2' }, list, examPanel));
 }

@@ -180,26 +180,29 @@ var Auth = (function () {
   /* ---------- account bar ----------
      Fills <div id="account"> in the page header with the user's name and a
      Log out button, or a Log in link when nobody is logged in. */
+  // Fills every account slot on the page (marked data-account): the sidebar
+  // on computers and the "More" menu on phones.
   function renderAccount() {
-    const box = document.getElementById('account');
-    if (!box) return;
     const user = currentUser();
-    box.replaceChildren();
-    if (user) {
-      const who = document.createElement('span');
-      who.textContent = 'Logged in as ' + user.name;
-      const out = document.createElement('button');
-      out.type = 'button';
-      out.className = 'link-btn';
-      out.textContent = 'Log out';
-      out.addEventListener('click', logout);
-      box.append(who, out);
-    } else {
-      const a = document.createElement('a');
-      a.href = 'login.html';
-      a.textContent = 'Log in';
-      box.append(a);
-    }
+    document.querySelectorAll('[data-account]').forEach(function (box) {
+      box.replaceChildren();
+      if (user) {
+        const who = document.createElement('span');
+        who.className = 'account-name';
+        who.textContent = 'Logged in as ' + user.name;
+        const out = document.createElement('button');
+        out.type = 'button';
+        out.className = 'link-btn';
+        out.textContent = 'Log out';
+        out.addEventListener('click', logout);
+        box.append(who, out);
+      } else {
+        const a = document.createElement('a');
+        a.href = 'login.html';
+        a.textContent = 'Log in';
+        box.append(a);
+      }
+    });
   }
   document.addEventListener('DOMContentLoaded', renderAccount);
 
