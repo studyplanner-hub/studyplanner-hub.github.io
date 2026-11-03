@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<!-- Security policy: scripts may only come from this site (no inline or injected scripts); styles and fonts only from this site and Google Fonts. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ECEFF5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C111D" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>Contact · Study Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/auth.js"></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="page">
+  <header class="masthead">
+    <h1>Study Planner</h1>
+    <div class="account" id="account"></div>
+  </header>
+  <nav class="tabs" aria-label="Sections">
+    <a href="index.html">Overview</a>
+    <a href="tasks.html">Tasks</a>
+    <a href="plans.html">Study Plans</a>
+    <a href="schedule.html">Schedule</a>
+    <a href="flashcards.html">Flashcards</a>
+    <a href="focus.html">Focus</a>
+    <a href="subjects.html">Subjects</a>
+    <a href="contact.html" aria-current="page">Contact</a>
+  </nav>
+
+  <main class="contact-layout" id="main">
+    <section class="panel" aria-labelledby="contact-title">
+      <div class="panel-head"><h2 id="contact-title">Send a message</h2></div>
+      <p class="muted-note">Found a bug, have an idea, or need help? Tell us below.</p>
+
+      <form id="contact-form" class="auth-form" novalidate>
+        <div class="field">
+          <label for="name">Your name</label>
+          <input type="text" id="name" name="name" autocomplete="name" aria-describedby="name-error">
+          <p class="field-error" id="name-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" autocomplete="email" spellcheck="false" aria-describedby="email-error">
+          <p class="field-error" id="email-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="topic">Topic</label>
+          <select id="topic" name="topic" aria-describedby="topic-error">
+            <option value="">Choose a topic</option>
+            <option value="question">General question</option>
+            <option value="bug">Report a bug</option>
+            <option value="idea">Suggest a feature</option>
+          </select>
+          <p class="field-error" id="topic-error" aria-live="polite"></p>
+        </div>
+
+        <div class="field">
+          <label for="message">Message</label>
+          <textarea id="message" name="message" rows="6" maxlength="1000" aria-describedby="message-count message-error"></textarea>
+          <p class="field-hint" id="message-count">0 / 1000 characters</p>
+          <p class="field-error" id="message-error" aria-live="polite"></p>
+        </div>
+
+        <p class="form-error" role="alert"></p>
+        <button class="btn" type="submit">Send message</button>
+        <p class="form-success" id="contact-success" role="status"></p>
+      </form>
+    </section>
+
+    <section class="panel" aria-labelledby="sent-title">
+      <div class="panel-head"><h2 id="sent-title">Your sent messages</h2></div>
+      <ul class="sent-list" id="sent-list"></ul>
+    </section>
+  </main>
+  <p class="foot">There is no server, so messages are stored in this browser only.</p>
+</div>
+<script src="js/validate.js"></script>
+<script src="js/contact.js"></script>
+</body>
+</html>

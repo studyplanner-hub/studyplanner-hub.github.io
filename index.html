@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en" data-auth="required">
+<head>
+<meta charset="utf-8">
+<!-- Security policy: scripts may only come from this site (no inline or injected scripts); styles and fonts only from this site and Google Fonts. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'self'">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ECEFF5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0C111D" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<title>Study Planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Instrument+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="css/style.css">
+<script src="js/auth.js"></script>
+</head>
+<body data-view="overview">
+<a class="skip-link" href="#view">Skip to content</a>
+<div class="page">
+  <header class="masthead">
+    <h1>Study Planner</h1>
+    <div class="masthead-side">
+      <p class="today-label" id="today-label"></p>
+      <div class="account" id="account"></div>
+    </div>
+  </header>
+  <nav class="tabs" aria-label="Sections">
+    <a href="index.html" data-view="overview">Overview</a>
+    <a href="tasks.html" data-view="tasks">Tasks</a>
+    <a href="plans.html" data-view="plans">Study Plans</a>
+    <a href="schedule.html" data-view="schedule">Schedule</a>
+    <a href="flashcards.html" data-view="flashcards">Flashcards</a>
+    <a href="focus.html" data-view="focus">Focus</a>
+    <a href="subjects.html" data-view="subjects">Subjects</a>
+    <a href="contact.html">Contact</a>
+  </nav>
+  <main id="view"></main>
+  <p class="foot">Your plan is saved in this browser only.</p>
+</div>
+<div id="toast" role="status" aria-live="polite"><span></span></div>
+<!-- Order matters: each file uses things declared in the files above it. -->
+<script src="js/constants.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/state.js"></script>
+<script src="js/tasks.js"></script>
+<script src="js/streaks.js"></script>
+<script src="js/plans.js"></script>
+<script src="js/overview.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/focus.js"></script>
+<script src="js/subjects.js"></script>
+<script src="js/flashcards.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
+
+

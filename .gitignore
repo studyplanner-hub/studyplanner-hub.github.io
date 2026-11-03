@@ -1,0 +1,3 @@
+# Editor and Claude Code settings: local to this computer, not part of the website
+.claude/
+.vscode/
