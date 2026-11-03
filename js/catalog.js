@@ -33,12 +33,12 @@ function catalogPicker(o) {
   });
   const extra = o.extra || [];
 
-  const find = h('input', { type: 'search', id: p + '-find', placeholder: 'e.g. circuits, marketing, Fourier…', autocomplete: 'off' });
-  const college = h('select', { id: p + '-college' },
+  const find = h('input', { type: 'search', id: p + '-find', name: 'q', spellcheck: 'false', placeholder: 'e.g. circuits, marketing, Fourier…', autocomplete: 'off' });
+  const college = h('select', { id: p + '-college', name: 'college' },
     h('option', { value: '' }, 'All colleges'), COLLEGES.map((c) => h('option', { value: c.name }, c.short)));
-  const dept = h('select', { id: p + '-dept' });
+  const dept = h('select', { id: p + '-dept', name: 'department' });
   const found = h('p', { class: 'muted-note', id: p + '-found', 'aria-live': 'polite' });
-  const sub = h('select', { id: p + '-subject' });
+  const sub = h('select', { id: p + '-subject', name: 'subject' });
 
   function fillDepts() {
     const c = COLLEGES.find((x) => x.name === college.value);
