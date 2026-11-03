@@ -786,8 +786,10 @@ html { -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 18%, transp
 details[open] > .summary-btn::before { content: '\2212'; }
 .subj-where { font-size: 12.5px; font-weight: 600; color: var(--accent-text); margin-top: 4px; }
 
-/* Phones: form buttons take the full width, so long labels fit and they are
-   easy to tap with a thumb. */
+/* Form buttons sit on their own row, as wide as their label, so a long
+   label like "Add to my subjects" is never squeezed into a narrow grid
+   column. On phones they take the full width, easy to tap with a thumb. */
+.form > .btn { grid-column: 1 / -1; justify-self: start; width: auto; }
 @media (max-width: 560px) {
-  .form > .btn { grid-column: 1 / -1; width: 100%; }
+  .form > .btn { justify-self: stretch; width: 100%; }
 }

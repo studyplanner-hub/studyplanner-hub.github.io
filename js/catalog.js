@@ -42,7 +42,7 @@ function catalogPicker(o) {
 
   function fillDepts() {
     const c = COLLEGES.find((x) => x.name === college.value);
-    dept.replaceChildren(h('option', { value: '' }, 'All departments'),
+    dept.replaceChildren(h('option', { value: '' }, 'All'),
       // "..." spreads the list: replaceChildren takes elements, not an array.
       ...(c ? c.departments : []).map((d) => h('option', { value: d }, d)));
     dept.disabled = !c;
