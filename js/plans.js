@@ -21,14 +21,36 @@ function topicCheck(tp) {
   cb.addEventListener('change', () => setTopic(tp, cb.checked));
   return cb;
 }
+// A subject from the Subjects page and a topic list are linked by having the
+// same name (not case-sensitive), e.g. subject "Calculus II" uses the topic
+// list saved as "calculus ii".
+const sameName = (a, b) => a.trim().toLowerCase() === b.trim().toLowerCase();
+const topicsFor = (s) => state.custom.find((c) => sameName(c.name, s.name)) || null;
+
+// The plan generator's dropdown values:
+//   s:<id>  a subject from the Subjects page (uses its linked topic list)
+//   b:<key> a ready-made topic list (BUILTIN)
+//   c:<id>  a topic list not linked to any subject
+// Returns { name, desc, data } where data holds the topics per level, or
+// data: null for a subject that has no topics yet.
 function planSource(val) {
+  if (val.indexOf('s:') === 0) {
+    const s = subj(val.slice(2));
+    if (!s) return null;
+    const t = topicsFor(s);
+    return t
+      ? { name: s.name, desc: 'Your subject, using the topics you added for it.', data: t }
+      : { name: s.name, desc: s.name + ' has no topics yet. Add them in “Add topics for a subject” below, then come back here.', data: null };
+  }
   if (val.indexOf('b:') === 0) {
     const k = val.slice(2), b = BUILTIN[k];
     return b ? { name: k, desc: b.name + '. ' + b.desc, data: b } : null;
   }
   const c = state.custom.find((x) => 'c:' + x.id === val);
-  return c ? { name: c.name, desc: 'Your own subject.', data: c } : null;
+  return c ? { name: c.name, desc: 'Your own topic list.', data: c } : null;
 }
+// The generator's current choice, kept while you move around the page.
+let planPick = '';
 function planText(p) {
   const lines = [p.name + ' – ' + p.days + ' day' + (p.days === 1 ? '' : 's') + ', ' + p.hours + ' h per day'];
   p.data.forEach((d) => {
@@ -107,17 +129,37 @@ function planCard(p) {
 function viewPlans() {
   const wrap = h('div', { class: 'stack' });
 
+  // Your subjects first, then the ready-made lists, then any topic lists
+  // whose name does not match a subject.
   const sub = h('select', { id: 'p-subject' });
-  Object.keys(BUILTIN).forEach((k) => sub.append(h('option', { value: 'b:' + k }, k + ' – ' + BUILTIN[k].name)));
-  state.custom.forEach((c) => sub.append(h('option', { value: 'c:' + c.id }, c.name + ' (your own)')));
+  if (state.subjects.length) {
+    sub.append(h('optgroup', { label: 'Your subjects' }, state.subjects.map((s) =>
+      h('option', { value: 's:' + s.id }, s.name + (topicsFor(s) ? '' : ' (no topics yet)')))));
+  }
+  sub.append(h('optgroup', { label: 'Ready-made topic lists' }, Object.keys(BUILTIN).map((k) =>
+    h('option', { value: 'b:' + k }, k + ' – ' + BUILTIN[k].name))));
+  const loose = state.custom.filter((c) => !state.subjects.some((s) => sameName(s.name, c.name)));
+  if (loose.length) {
+    sub.append(h('optgroup', { label: 'Other topic lists' }, loose.map((c) => h('option', { value: 'c:' + c.id }, c.name))));
+  }
+  // Start on the last choice; otherwise the first subject that has topics;
+  // otherwise the first ready-made list.
+  const firstReady = state.subjects.find(topicsFor);
+  sub.value = planSource(planPick) ? planPick : (firstReady ? 's:' + firstReady.id : 'b:' + Object.keys(BUILTIN)[0]);
   const level = h('select', { id: 'p-level' }, LEVELS.map((l) => h('option', { value: l }, l)));
   const days = h('input', { type: 'number', id: 'p-days', min: '1', max: '30', value: '3' });
   const hours = h('input', { type: 'number', id: 'p-hours', min: '0.5', max: '12', step: '0.5', value: '2' });
   const start = h('input', { type: 'date', id: 'p-start', value: todayKey() });
   const desc = h('p', { class: 'muted-note' });
-  const paintDesc = () => { const s = planSource(sub.value); desc.textContent = s ? s.desc : ''; };
-  sub.addEventListener('change', paintDesc);
-  paintDesc();
+  // Shows what the chosen list is. For a subject with no topics, also opens
+  // the topics form below with the subject's name filled in.
+  const paintDesc = () => {
+    const s = planSource(sub.value);
+    desc.textContent = s ? s.desc : '';
+    desc.classList.toggle('desc-warn', !!(s && !s.data));
+    if (s && !s.data) offerTopics(s.name);
+  };
+  sub.addEventListener('change', () => { planPick = sub.value; paintDesc(); });
   const msg = h('p', { class: 'msg', role: 'status' });
   const gen = h('form', { class: 'panel form', novalidate: true },
     field('Subject', 'p-subject', sub, 'wide'),
@@ -132,6 +174,11 @@ function viewPlans() {
     const src = planSource(sub.value);
     const n = Math.round(Number(days.value)), hr = Number(hours.value);
     if (!src) { fieldError(msg, sub, 'Choose a subject.'); return; }
+    if (!src.data) {
+      offerTopics(src.name);
+      fieldError(msg, sub, src.name + ' has no topics yet. Add them in “Add topics for a subject” below first.');
+      return;
+    }
     if (!(n >= 1 && n <= 30)) { fieldError(msg, days, 'Days must be between 1 and 30.'); return; }
     if (!(hr >= 0.5 && hr <= 12)) { fieldError(msg, hours, 'Hours per day must be between 0.5 and 12.'); return; }
     if (!start.value) { fieldError(msg, start, 'Choose a start date.'); return; }
@@ -144,7 +191,10 @@ function viewPlans() {
   });
 
   const cMsg = h('p', { class: 'msg', role: 'status' });
-  const cName = h('input', { type: 'text', id: 'c-name', placeholder: 'e.g. Linear Algebra', autocomplete: 'off' });
+  // The name box suggests your subjects (a <datalist>), so topics are easy
+  // to link to the right one.
+  const names = h('datalist', { id: 'subject-names' }, state.subjects.map((s) => h('option', { value: s.name })));
+  const cName = h('input', { type: 'text', id: 'c-name', placeholder: 'e.g. Linear Algebra', autocomplete: 'off', list: 'subject-names' });
   const cAreas = LEVELS.map((l) => h('textarea', { id: 'c-' + l, rows: '5', placeholder: 'One topic per line' }));
   const custom = h('form', { class: 'form', novalidate: true },
     field('Subject name', 'c-name', cName, 'wide'),
@@ -154,15 +204,23 @@ function viewPlans() {
     e.preventDefault();
     const n = cName.value.trim();
     if (!n) { fieldError(cMsg, cName, 'Enter a subject name.'); return; }
-    const c = { id: uid(), name: n };
+    // Saving under a name that already has topics replaces them, so each
+    // subject has one topic list.
+    const existing = state.custom.find((x) => sameName(x.name, n));
+    const c = existing || { id: uid(), name: n };
+    const topics = {};
     let count = 0;
     LEVELS.forEach((l, i) => {
-      c[l] = cAreas[i].value.split('\n').map((x) => x.trim()).filter(Boolean);
-      count += c[l].length;
+      topics[l] = cAreas[i].value.split('\n').map((x) => x.trim()).filter(Boolean);
+      count += topics[l].length;
     });
     if (!count) { fieldError(cMsg, cAreas[0], 'Add at least one topic.'); return; }
-    state.custom.push(c);
-    save(); render(); toast('Subject saved. Pick it in the generator above.');
+    Object.assign(c, topics);
+    if (!existing) state.custom.push(c);
+    // Pre-select it in the generator: the matching subject if there is one.
+    const s = state.subjects.find((x) => sameName(x.name, n));
+    planPick = s ? 's:' + s.id : 'c:' + c.id;
+    save(); render(); toast('Topics saved for ' + n + '. It is selected in the plan generator above.');
   });
   const customList = state.custom.length
     ? h('ul', { class: 'rows', style: 'margin-top:12px' }, state.custom.map((c) => h('li', null,
@@ -171,9 +229,17 @@ function viewPlans() {
       confirmBtn('Delete', () => { state.custom = state.custom.filter((x) => x !== c); save(); render(); }))))
     : null;
   const customPanel = h('details', { class: 'panel' },
-    h('summary', { style: 'cursor:pointer;font-weight:600' }, 'Add your own subject'),
-    h('p', { class: 'muted-note', style: 'margin:8px 0 12px' }, 'Topics per level, one per line. Add details after " - ", like "Arrays - indexing and sorting".'),
-    custom, customList);
+    h('summary', { style: 'cursor:pointer;font-weight:600' }, 'Add topics for a subject'),
+    h('p', { class: 'muted-note', style: 'margin:8px 0 12px' }, 'Use the same name as a subject on the Subjects page to link them. Topics per level, one per line. Add details after " - ", like "Arrays - indexing and sorting".'),
+    names, custom, customList);
+
+  // Opens the topics form for a subject that has none yet, with its name
+  // filled in (only if the box is empty, so typing is never overwritten).
+  function offerTopics(name) {
+    customPanel.open = true;
+    if (!cName.value.trim()) cName.value = name;
+  }
+  paintDesc();
 
   const q = h('input', { type: 'text', id: 'pf-q', placeholder: 'Search plans and topics…', value: planFilter.q, autocomplete: 'off' });
   const lv = h('select', { id: 'pf-level' }, h('option', { value: '' }, 'All levels'), LEVELS.map((l) => h('option', { value: l }, l)));

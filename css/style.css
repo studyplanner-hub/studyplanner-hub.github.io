@@ -674,3 +674,6 @@ html { -webkit-tap-highlight-color: color-mix(in srgb, var(--accent) 18%, transp
   z-index: 3;
   background: var(--surface);
 }
+
+/* Study Plans: "this subject has no topics yet" note under the dropdown. */
+.desc-warn { color: var(--warn); font-weight: 600; }
