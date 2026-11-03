@@ -5,7 +5,11 @@
 /* ---------- subjects & exams ---------- */
 function viewSubjects() {
   const msg = h('p', { class: 'msg', role: 'status' });
-  const name = h('input', { type: 'text', id: 'sub-name', placeholder: 'e.g. Linear Algebra', autocomplete: 'off' });
+  // As you type, the box suggests the ready-made subjects (from topics.js).
+  // Picking one means Study Plans already has topics for it.
+  const suggestions = h('datalist', { id: 'builtin-subjects' },
+    FIELDS.flatMap((f) => Object.keys(BUILTIN).filter((k) => BUILTIN[k].field === f).map((k) => h('option', { value: BUILTIN[k].name }, f))));
+  const name = h('input', { type: 'text', id: 'sub-name', placeholder: 'e.g. Circuit Analysis, Marketing…', autocomplete: 'off', list: 'builtin-subjects' });
   const goal = h('input', { type: 'number', id: 'sub-goal', min: '0', max: '40', step: '0.5', value: '4' });
   const sw = h('div', { class: 'swatches', role: 'radiogroup', 'aria-label': 'Subject color' });
   COLOR_NAMES.forEach((cn, i) => {
@@ -14,7 +18,7 @@ function viewSubjects() {
       h('span')));
   });
   const subForm = h('form', { class: 'panel form', novalidate: true },
-    field('Subject name', 'sub-name', name, 'wide'),
+    field('Subject name', 'sub-name', name, 'wide'), suggestions,
     field('Weekly goal (hours)', 'sub-goal', goal),
     h('div', { class: 'field' }, h('span', { style: 'font-size:12.5px;font-weight:600;color:var(--muted)' }, 'Color'), sw),
     h('button', { class: 'btn', type: 'submit' }, 'Add subject'), msg);
